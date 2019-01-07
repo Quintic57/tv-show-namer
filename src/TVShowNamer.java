@@ -1,54 +1,74 @@
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
+//import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.File;
-import java.io.IOException;
-import java.util.Scanner;
+//import java.io.IOException;
+//import java.util.Scanner;
 
 public class TVShowNamer {
-    private static String srcDirectory = "E:\\Storage\\TV Shows\\test\\";
-    private static String fileExtension = ".mkv";
-    private static String showName = "Community";
-    private static int seasonNumber = 4;
+    private String srcDirectory;
+    private String fileExtension;
+    private String showName;
+    private int seasonNumber;
 
-//    public ShowNamer(String srcDirectory, String fileExtension, String showName, int seasonNumber) {
-//
-//    }
-//
-//    public String getSrcDirectory() {
-//        return srcDirectory;
-//    }
-//
-//    public String getFileExtension() {
-//        return fileExtension;
-//    }
-//
-//    public String getShowName() {
-//        return showName;
-//    }
-//
-//    public int getSeasonNumber() {
-//        return seasonNumber;
-//    }
-//
-//    public String getURL() {
-//        String url = "https://www.thetvdb.com/series/";
-//        url = url + showName.toLowerCase().replace(" ", "-") + "/seasons/" + seasonNumber;
-//
-//        return url;
-//    }
+    public TVShowNamer(String srcDirectory, String fileExtension, String showName, int seasonNumber) {
+        this.srcDirectory = srcDirectory;
+        this.fileExtension = fileExtension;
+        this.showName = showName;
+        this.seasonNumber = seasonNumber;
+    }
 
-    public static void main(String[] args) {
+    /**
+     * Returns source directory variable. Used for testing purposes only
+     *
+     * @return source directory
+     */
+    public String getSrcDirectory() {
+        return srcDirectory;
+    }
+
+    /**
+     * Returns file extension variable. Used for testing purposes only
+     *
+     * @return file extension
+     */
+    public String getFileExtension() {
+        return fileExtension;
+    }
+
+    /**
+     * Returns show name variable. Used for testing purposes only
+     *
+     * @return show name
+     */
+    public String getShowName() {
+        return showName;
+    }
+
+    /**
+     * Returns season number variable. Used for testing purposes only
+     *
+     * @return season number
+     */
+    public int getSeasonNumber() {
+        return seasonNumber;
+    }
+
+    /**
+     * Runs the script
+     * @return true if the script runs succesfully, false if it fails
+     */
+    public boolean run() {
         File directory = new File(srcDirectory);
         File[] fileList = directory.listFiles();
 
         String fileName = showName + " - " + "S" + (seasonNumber < 10 ? "0" + seasonNumber : seasonNumber);
 
+        // URL
         String url = "https://www.thetvdb.com/series/";
         url = url + showName.toLowerCase().replace(" ", "-") + "/seasons/" + seasonNumber;
-//        System.out.println(url);
 
         Elements episodes = new Elements();
 
@@ -64,19 +84,31 @@ public class TVShowNamer {
 //            System.out.println(e.getElementsByTag("td").get(1).getElementsByTag("span").get(0).text());
 //        }
 
+        if (fileList == null || (fileList.length != episodes.size())) {
+            System.out.println("The number of files in the directory and the number of episodes in the season do not match");
+            System.out.println("File List Size: " + fileList.length);
+            System.out.println("Episode Array Size: " + episodes.size());
+            for (int i = 0; i < fileList.length; i++) {
+                System.out.println(fileList[i]);
+            }
+            return false;
+        }
+
         /*
         For reference:
         - There is only one element returned from "tbody" tag
         - From all of the elements returned in "span" tag, the one referenced by index 0 is the English one
          */
-        if (fileList != null) {
-            for (int i = 0; i < fileList.length; i++) {
-                String episodeName = episodes.get(i).getElementsByTag("td").get(1).getElementsByTag("span").get(0).text();
-                episodeName = episodeName.replace(":", "-");
-//            System.out.println(episodeName);
-                File temp = new File(srcDirectory + fileName + "E" + ((i + 1) < 10 ? "0" + (i + 1) : (i + 1)) + " - " + episodeName + fileExtension);
-                System.out.println(fileList[i].renameTo(temp));
+        for (int i = 0; i < fileList.length; i++) {
+            String episodeName = episodes.get(i).getElementsByTag("td").get(1).getElementsByTag("span").get(0).text();
+            episodeName = episodeName.replace(":", "-");
+            File temp = new File(srcDirectory + fileName + "E" + ((i + 1) < 10 ? "0" + (i + 1) : (i + 1)) + " - " + episodeName + fileExtension);
+
+            if (!fileList[i].renameTo(temp)) {
+                return false;
             }
         }
+
+        return true;
     }
 }
